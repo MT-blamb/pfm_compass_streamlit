@@ -200,7 +200,7 @@ BUCKET_MAPPINGS = {
 def load_data():
     """Load the parquet file"""
     try:
-        df = pd.read_parquet('./pfm_compass_data/retirement_scenarios_FIXED_v4.parquet')
+        df = pd.read_parquet('data/pfm_compass_data/retirement_scenarios_FIXED_v4.parquet')
         return df
     except Exception as e:
         st.error(f"❌ Error loading data | データの読み込みに失敗しました: {e}")
