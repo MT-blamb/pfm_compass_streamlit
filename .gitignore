@@ -58,7 +58,7 @@ venv.bak/
 # *.parquet
 # *.csv
 # data/
-
+pfm_compass_data
 # macOS
 .DS_Store
 .DS_Store?
@@ -78,3 +78,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# PFM Compass data (generated/large)
+pfm_compass_data/
+**/*.parquet
