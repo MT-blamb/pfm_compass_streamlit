@@ -62,10 +62,6 @@ echo "📋 Instance: $INSTANCE_NAME"
 echo "📋 Key: $KEY_NAME"
 echo ""
 
-# Get your current IP
-MY_IP=$(curl -s ifconfig.me)/32
-echo "🔒 Your IP: $MY_IP"
-
 # Create key pair
 echo "🔑 Creating key pair..."
 aws ec2 create-key-pair \
@@ -92,20 +88,37 @@ SECURITY_GROUP_ID=$(aws ec2 create-security-group \
     --output text \
     --region $REGION)
 
-# Add rules
-echo "🔓 Adding security rules..."
+# Add security rules for company VPCs
+echo "🔓 Adding security rules for company VPCs..."
+
+# SSH access from both company VPCs
 aws ec2 authorize-security-group-ingress \
     --group-id $SECURITY_GROUP_ID \
     --protocol tcp \
     --port 22 \
-    --cidr 0.0.0.0/0 \
+    --cidr 172.31.0.0/16 \
+    --region $REGION
+
+aws ec2 authorize-security-group-ingress \
+    --group-id $SECURITY_GROUP_ID \
+    --protocol tcp \
+    --port 22 \
+    --cidr 10.0.0.0/16 \
+    --region $REGION
+
+# Streamlit app access from both company VPCs
+aws ec2 authorize-security-group-ingress \
+    --group-id $SECURITY_GROUP_ID \
+    --protocol tcp \
+    --port 8501 \
+    --cidr 172.31.0.0/16 \
     --region $REGION
 
 aws ec2 authorize-security-group-ingress \
     --group-id $SECURITY_GROUP_ID \
     --protocol tcp \
     --port 8501 \
-    --cidr $MY_IP \
+    --cidr 10.0.0.0/16 \
     --region $REGION
 
 echo "✅ Security group created: $SECURITY_GROUP_ID"
@@ -150,6 +163,8 @@ echo "🔧 Instance details:"
 echo "   📍 Instance ID: $INSTANCE_ID"
 echo "   🌐 Public IP: $PUBLIC_IP"
 echo "   🔑 SSH Key: ${KEY_NAME}.pem"
+echo ""
+echo "🔒 Security: Restricted to company VPCs (172.31.0.0/16 and 10.0.0.0/16)"
 echo ""
 echo "🖥️ To connect via SSH:"
 echo "   ssh -i ${KEY_NAME}.pem ec2-user@$PUBLIC_IP"
