@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 
 st.set_page_config(
-    page_title="PFM Compass - Retirement Planner | 退職計画シミュレーター",
+    page_title="PFM Compass - Retirement Planning Feature | 退職計画シミュレーター",
     page_icon="🎯",
     layout="wide"
 )
@@ -27,22 +27,58 @@ st.markdown("""
         color: white;
     }
     .metric-card {
-        background: white;
-        padding: 1rem;
+        background: #2c3e50 !important;
+        padding: 1.5rem;
         border-radius: 8px;
         border-left: 4px solid #667eea;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 1rem;
+        border: 1px solid #34495e;
     }
-    .status-green { border-left-color: #28a745; background: #f8fff9; }
-    .status-yellow { border-left-color: #ffc107; background: #fffef8; }
-    .status-red { border-left-color: #dc3545; background: #fff8f8; }
+    .metric-card h3 {
+        color: white !important;
+        font-weight: 700 !important;
+        font-size: 1.3rem !important;
+        margin: 0 !important;
+        line-height: 1.4 !important;
+        text-shadow: none !important;
+    }
+    .status-green { 
+        border-left-color: #28a745 !important; 
+        background: #2c3e50 !important;
+    }
+    .status-green h3 {
+        color: white !important;
+        font-weight: 700 !important;
+    }
+    .status-yellow { 
+        border-left-color: #ffc107 !important; 
+        background: #2c3e50 !important;
+    }
+    .status-yellow h3 {
+        color: white !important;
+        font-weight: 700 !important;
+    }
+    .status-red { 
+        border-left-color: #dc3545 !important; 
+        background: #2c3e50 !important;
+    }
+    .status-red h3 {
+        color: white !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Override any Streamlit conflicting styles */
+    .metric-card h3, .metric-card h3 span {
+        color: inherit !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # Translations
 TRANSLATIONS = {
     "English": {
-        "title": "🎯 PFM Compass - Japanese Retirement Planner",
+        "title": "PFM Compass - Retirement Planning Feature",
         "subtitle": "Analyze your retirement plan and discover whether FIRE or traditional retirement is optimal for you",
         "profile_header": "👤 Your Profile",
         "basic_info": "### Basic Information",
@@ -200,7 +236,7 @@ BUCKET_MAPPINGS = {
 def load_data():
     """Load the parquet file"""
     try:
-        df = pd.read_parquet('data/pfm_compass_data/retirement_scenarios_FIXED_v4.parquet')
+        df = pd.read_parquet('data/pfm_compass_data/retirement_scenarios_FIXED_v4_alternative.parquet')
         return df
     except Exception as e:
         st.error(f"❌ Error loading data | データの読み込みに失敗しました: {e}")
@@ -430,46 +466,57 @@ if analyze_button:
                 fig = go.Figure()
                 
                 # Wealth projection line
+                line_name = "Wealth Timeline" if lang == "English" else "資産推移"
+                hover_template = 'Age: %{x}<br>Wealth: ¥%{y:,.0f}<extra></extra>' if lang == "English" else '年齢: %{x}<br>資産: ¥%{y:,.0f}<extra></extra>'
+                
                 fig.add_trace(go.Scatter(
                     x=timeline_df['age'],
                     y=timeline_df['wealth'],
                     mode='lines+markers',
-                    name='Wealth Timeline | 資産推移',
+                    name=line_name,
                     line=dict(color='#667eea', width=4),
                     marker=dict(size=8),
-                    hovertemplate='Age | 年齢: %{x}<br>Wealth | 資産: ¥%{y:,.0f}<extra></extra>'
+                    hovertemplate=hover_template
                 ))
                 
                 # FIRE goal line
+                fire_label = "FIRE Goal" if lang == "English" else "FIRE目標"
                 fig.add_hline(
                     y=result['fire_number'],
                     line_dash="dash",
                     line_color="#dc3545",
-                    annotation_text=f"FIRE Goal | FIRE目標: {format_currency(result['fire_number'])}"
+                    annotation_text=f"{fire_label}: {format_currency(result['fire_number'])}"
                 )
                 
                 # Traditional retirement line  
                 if result['traditional_number'] > 0:
+                    trad_label = "Traditional Goal" if lang == "English" else "従来退職目標"
                     fig.add_hline(
                         y=result['traditional_number'],
                         line_dash="dot",
                         line_color="#28a745", 
-                        annotation_text=f"Traditional Goal | 従来退職目標: {format_currency(result['traditional_number'])}"
+                        annotation_text=f"{trad_label}: {format_currency(result['traditional_number'])}"
                     )
                 
                 # Retirement age line
                 retirement_age = result['traditional_retirement_age']
                 if retirement_age and not pd.isna(retirement_age):
+                    age_label = "Retirement Age" if lang == "English" else "退職可能年齢"
                     fig.add_vline(
                         x=retirement_age,
                         line_dash="dot",
                         line_color="#ffc107",
-                        annotation_text=f"Retirement Age | 退職可能年齢: {retirement_age:.0f}"
+                        annotation_text=f"{age_label}: {retirement_age:.0f}"
                     )
                 
-                title_text = "Your Wealth Growth Timeline | あなたの資産形成推移"
-                xaxis_title = "Age | 年齢"
-                yaxis_title = "Wealth (¥) | 資産額 (円)"
+                if lang == "English":
+                    title_text = "Your Wealth Growth Timeline"
+                    xaxis_title = "Age"
+                    yaxis_title = "Wealth (¥)"
+                else:
+                    title_text = "あなたの資産形成推移"
+                    xaxis_title = "年齢"
+                    yaxis_title = "資産額 (円)"
                 
                 fig.update_layout(
                     title=title_text,
@@ -518,11 +565,12 @@ if analyze_button:
             
             x_col = list(comparison_data.keys())[0]
             y_col = list(comparison_data.keys())[1]
+            bar_name = "Required Assets" if lang == "English" else "必要資産額"
             
             fig_comp.add_trace(go.Bar(
                 x=comp_df[x_col],
                 y=comp_df[y_col],
-                name='Required Assets | 必要資産額',
+                name=bar_name,
                 marker_color=['#667eea', '#764ba2']
             ))
             
