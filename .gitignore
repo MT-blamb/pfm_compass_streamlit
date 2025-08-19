@@ -21,6 +21,9 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+*.pyc
+*.pyo
+*.pyd
 
 # PyInstaller
 *.manifest
@@ -81,4 +84,7 @@ Thumbs.db
 
 # PFM Compass data (generated/large)
 pfm_compass_data/
-**/*.parquet
+
+# AWS deployment artifacts
+*.pem
+user-data.sh
