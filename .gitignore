@@ -87,4 +87,4 @@ pfm_compass_data/
 
 # AWS deployment artifacts
 *.pem
-user-data.sh
+user-data.shdata/*.parquet
