@@ -137,6 +137,28 @@ st.markdown("""
         background: linear-gradient(145deg, #4d1a1a, #5a2d2d) !important;
     }
     
+    .chart-explanation {
+        background: linear-gradient(145deg, #34495e, #2c3e50);
+        padding: 1.5rem;
+        border-radius: 15px;
+        margin: 1rem 0;
+        border-left: 4px solid #667eea;
+        color: white;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .chart-explanation h4 {
+        color: #667eea;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .chart-explanation p {
+        margin: 0;
+        color: #bdc3c7;
+        line-height: 1.5;
+    }
+    
     /* Animated progress bars */
     .progress-container {
         background: rgba(255,255,255,0.1);
@@ -476,43 +498,14 @@ def create_enhanced_gauge_chart(value, title, max_value=100, color_range=["#ff47
     )
     return fig
 
-def create_3d_wealth_surface(df_sample):
-    """Create a 3D surface plot showing wealth outcomes"""
-    # Sample data for 3D visualization
-    age_range = np.linspace(25, 65, 20)
-    savings_range = np.linspace(50000, 500000, 20)
-    
-    # Create meshgrid
-    age_mesh, savings_mesh = np.meshgrid(age_range, savings_range)
-    
-    # Simulate wealth data (replace with actual calculations)
-    wealth_mesh = (savings_mesh * 12 * (65 - age_mesh) * 1.05 ** (65 - age_mesh)) / 1000000
-    
-    fig = go.Figure(data=[go.Surface(
-        z=wealth_mesh,
-        x=age_mesh,
-        y=savings_mesh,
-        colorscale='Viridis',
-        opacity=0.8
-    )])
-    
-    fig.update_layout(
-        title='Wealth Projection 3D Surface',
-        scene=dict(
-            xaxis_title='Age',
-            yaxis_title='Monthly Savings (¥)',
-            zaxis_title='Projected Wealth (M¥)',
-            bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(gridcolor="rgba(255,255,255,0.2)"),
-            yaxis=dict(gridcolor="rgba(255,255,255,0.2)"),
-            zaxis=dict(gridcolor="rgba(255,255,255,0.2)")
-        ),
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font={'color': "white"},
-        height=600
-    )
-    return fig
+def create_chart_explanation(title, explanation):
+    """Create a styled explanation box for charts"""
+    return f"""
+    <div class="chart-explanation">
+        <h4>📊 {title}</h4>
+        <p>{explanation}</p>
+    </div>
+    """
 
 # Enhanced data loading with progress
 with st.spinner("🔄 Loading retirement scenarios..."):
@@ -723,6 +716,12 @@ if analyze_button:
         ])
         
         with tab1:
+            # Chart explanation for wealth timeline
+            st.markdown(create_chart_explanation(
+                "Wealth Growth Over Time",
+                "This chart shows how your savings and investments are projected to grow from now until retirement. The blue line represents your accumulated wealth, while the red dashed line shows your FIRE target (25 times annual expenses). When the blue line crosses the red line, you've achieved financial independence!"
+            ), unsafe_allow_html=True)
+            
             # Enhanced wealth timeline with multiple scenarios
             timeline_data = result.get('wealth_timeline', [
                 {'age': 37, 'wealth': 10000000, 'year': 2025},
@@ -755,13 +754,8 @@ if analyze_button:
                         timeline_df = pd.DataFrame([timeline_data])
                     
                     if len(timeline_df) > 0 and 'age' in timeline_df.columns and 'wealth' in timeline_df.columns:
-                        # Create subplots for enhanced visualization
-                        fig = make_subplots(
-                            rows=1, cols=1,
-                            subplot_titles=('Wealth Growth Timeline'),
-                            vertical_spacing=0.14,
-                            specs=[[{"secondary_y": False}],]
-                        )
+                        # Create enhanced visualization
+                        fig = go.Figure()
                         
                         # Main wealth timeline
                         fig.add_trace(
@@ -769,25 +763,75 @@ if analyze_button:
                                 x=timeline_df['age'],
                                 y=timeline_df['wealth'],
                                 mode='lines+markers',
-                                name='Projected Wealth',
+                                name='Your Projected Wealth',
                                 line=dict(color='#667eea', width=4),
-                                marker=dict(size=12, symbol='circle'),
-                                fill='tonexty' if len(timeline_df) > 1 else None,
-                                fillcolor='rgba(102, 126, 234, 0.2)'
-                            ),
-                            row=1, col=1
+                                marker=dict(size=12, symbol='circle', color='#667eea'),
+                                fill='tonexty',
+                                fillcolor='rgba(102, 126, 234, 0.2)',
+                                hovertemplate='<b>Age %{x}</b><br>Wealth: ¥%{y:,.0f}<extra></extra>'
+                            )
                         )
                         
                         # FIRE goal line
+                        fire_target = result.get('fire_number', 60000000)
                         fig.add_hline(
-                            y=result.get('fire_number', 60000000),
+                            y=fire_target,
                             line_dash="dash",
                             line_color="#e74c3c",
-                            annotation_text=f"FIRE Goal: {format_currency(result.get('fire_number', 60000000))}",
-                            row=1, col=1
+                            line_width=3,
+                            annotation_text=f"FIRE Target: {format_currency(fire_target)}",
+                            annotation_position="bottom right"
                         )
                         
+                        # Traditional retirement line (if different from FIRE)
+                        traditional_age = result.get('traditional_retirement_age', 65)
+                        if traditional_age != result.get('fire_age', 50):
+                            fig.add_vline(
+                                x=traditional_age,
+                                line_dash="dot",
+                                line_color="#f39c12",
+                                line_width=2,
+                                annotation_text=f"Traditional Retirement Age: {traditional_age:.0f}",
+                                annotation_position="top left"
+                            )
+                        
+                        fig.update_layout(
+                            title="Your Wealth Growth Timeline",
+                            xaxis_title="Age (Years)",
+                            yaxis_title="Accumulated Wealth (¥)",
+                            paper_bgcolor="rgba(0,0,0,0)",
+                            plot_bgcolor="rgba(0,0,0,0)",
+                            font={'color': "white", 'family': "Inter"},
+                            height=500,
+                            showlegend=True,
+                            hovermode='x unified'
+                        )
+                        
+                        # Style the axes
+                        fig.update_xaxes(gridcolor="rgba(255,255,255,0.2)", showgrid=True)
+                        fig.update_yaxes(gridcolor="rgba(255,255,255,0.2)", showgrid=True)
+                        
                         st.plotly_chart(fig, use_container_width=True)
+                        
+                        # Key insights below the chart
+                        st.markdown("#### 🔍 Key Insights from Your Timeline:")
+                        col1, col2, col3 = st.columns(3)
+                        
+                        with col1:
+                            fire_age = timeline_df[timeline_df['wealth'] >= fire_target]['age'].min() if any(timeline_df['wealth'] >= fire_target) else "Not achieved"
+                            if fire_age != "Not achieved":
+                                st.success(f"🔥 **FIRE Achievable at age {fire_age:.0f}**")
+                            else:
+                                st.warning("🔥 FIRE target not reached in timeline")
+                        
+                        with col2:
+                            annual_growth = ((timeline_df['wealth'].iloc[-1] / timeline_df['wealth'].iloc[0]) ** (1/(timeline_df['age'].iloc[-1] - timeline_df['age'].iloc[0])) - 1) * 100
+                            st.info(f"📈 **Average Growth: {annual_growth:.1f}% per year**")
+                        
+                        with col3:
+                            final_wealth = timeline_df['wealth'].iloc[-1]
+                            st.metric("🎯 **Final Wealth**", format_currency(final_wealth))
+                        
                     else:
                         st.info("📊 Timeline data structure not compatible. Showing summary instead.")
                         # Show simple metrics instead
@@ -830,7 +874,7 @@ if analyze_button:
                         paper_bgcolor="rgba(0,0,0,0)",
                         plot_bgcolor="rgba(0,0,0,0)",
                         font={'color': "white"},
-                        height=800
+                        height=400
                     )
                     
                     st.plotly_chart(fig, use_container_width=True)
@@ -849,10 +893,16 @@ if analyze_button:
                     st.metric("Projected Wealth", format_currency(result.get('projected_wealth', 50000000)))
         
         with tab2:
+            # Chart explanation for comparison
+            st.markdown(create_chart_explanation(
+                "How You Compare - Retirement Readiness Radar",
+                "This radar chart compares your retirement readiness across 5 key dimensions against typical benchmarks. Your profile is shown in blue, while the average person's profile is in red. Areas where you exceed the benchmark indicate strengths, while areas inside the red zone suggest opportunities for improvement."
+            ), unsafe_allow_html=True)
+            
             # Enhanced comparison with radar chart
             comparison_metrics = {
                 'FIRE Achievement': result.get('fire_percentage', 75),
-                'Traditional Readiness': traditional_readiness,
+                'Traditional Readiness': 100 if result.get('traditional_retirement_age', 65) <= result.get('retirement_age_midpoint', 65) else max(0, 100 - (result.get('traditional_retirement_age', 65) - result.get('retirement_age_midpoint', 65)) * 10),
                 'Savings Rate': min(100, (result.get('monthly_savings_midpoint', 250000) * 12 / result.get('income_midpoint', 7500000)) * 100),
                 'Time to Goal': max(0, 100 - (result.get('traditional_retirement_age', 62) - 30) * 2),
                 'Risk Management': 85  # Placeholder
@@ -867,7 +917,8 @@ if analyze_button:
                 fill='toself',
                 name='Your Profile',
                 line_color='#667eea',
-                fillcolor='rgba(102, 126, 234, 0.3)'
+                fillcolor='rgba(102, 126, 234, 0.3)',
+                line_width=3
             ))
             
             # Add benchmark
@@ -878,7 +929,9 @@ if analyze_button:
                 fill='toself',
                 name='Average Benchmark',
                 line_color='#e74c3c',
-                fillcolor='rgba(231, 76, 60, 0.2)'
+                fillcolor='rgba(231, 76, 60, 0.2)',
+                line_width=2,
+                line_dash='dash'
             ))
             
             fig_radar.update_layout(
@@ -886,9 +939,13 @@ if analyze_button:
                     radialaxis=dict(
                         visible=True,
                         range=[0, 100],
-                        gridcolor="rgba(255,255,255,0.2)"
+                        gridcolor="rgba(255,255,255,0.2)",
+                        tickcolor="white"
                     ),
-                    angularaxis=dict(gridcolor="rgba(255,255,255,0.2)")
+                    angularaxis=dict(
+                        gridcolor="rgba(255,255,255,0.2)",
+                        tickcolor="white"
+                    )
                 ),
                 showlegend=True,
                 title="Retirement Readiness Comparison",
@@ -899,16 +956,55 @@ if analyze_button:
             )
             
             st.plotly_chart(fig_radar, use_container_width=True)
+            
+            # Detailed breakdown of each metric
+            st.markdown("#### 📋 Detailed Metric Breakdown:")
+            
+            metrics_explanations = {
+                'FIRE Achievement': 'How close you are to achieving Financial Independence (having 25x annual expenses saved)',
+                'Traditional Readiness': 'Your preparedness for traditional retirement at the standard pension age',
+                'Savings Rate': 'Percentage of income you save monthly (higher is better for early retirement)',
+                'Time to Goal': 'How realistic your timeline is based on current savings trajectory',
+                'Risk Management': 'Overall financial stability and emergency preparedness'
+            }
+            
+            for metric, value in comparison_metrics.items():
+                explanation = metrics_explanations.get(metric, "")
+                benchmark = dict(zip(comparison_metrics.keys(), benchmark_values))[metric]
+                
+                status = "Above Average" if value > benchmark else "Below Average" if value < benchmark else "Average"
+                status_color = "#2ed573" if value > benchmark else "#e74c3c" if value < benchmark else "#f39c12"
+                
+                st.markdown(f"""
+                <div style="background: linear-gradient(145deg, #34495e, #2c3e50); padding: 1rem; margin: 0.5rem 0; border-radius: 10px; border-left: 4px solid {status_color};">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h5 style="color: white; margin: 0;">{metric}</h5>
+                            <p style="color: #bdc3c7; margin: 0; font-size: 0.9rem;">{explanation}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: white; font-size: 1.2rem; font-weight: bold;">{value:.1f}%</span><br>
+                            <span style="color: {status_color}; font-size: 0.8rem;">{status}</span>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
         
         with tab3:
+            # Chart explanation for scenarios
+            st.markdown(create_chart_explanation(
+                "What-If Scenario Analysis",
+                "This analysis shows how small changes to your savings rate or investment returns could dramatically impact your retirement outcome. The Conservative scenario assumes lower returns and savings, Current Plan uses your inputs, and Aggressive assumes higher savings and returns. Use this to understand the impact of increasing your monthly savings or taking on slightly more investment risk."
+            ), unsafe_allow_html=True)
+            
             # New scenarios analysis tab
-            st.subheader("🎯 What-If Scenario Analysis")
+            st.subheader("🎯 Impact of Different Strategies")
             
             # Create scenario variations
             scenarios = {
-                'Conservative': {'savings_multiplier': 0.8, 'return_rate': 0.02},
-                'Current Plan': {'savings_multiplier': 1.0, 'return_rate': 0.03},
-                'Aggressive': {'savings_multiplier': 1.3, 'return_rate': 0.05}
+                'Conservative': {'savings_multiplier': 0.8, 'return_rate': 0.02, 'description': 'Lower savings, safer investments'},
+                'Current Plan': {'savings_multiplier': 1.0, 'return_rate': 0.03, 'description': 'Your current strategy'},
+                'Aggressive': {'savings_multiplier': 1.3, 'return_rate': 0.05, 'description': 'Higher savings, growth investments'}
             }
             
             scenario_results = []
@@ -920,10 +1016,11 @@ if analyze_button:
                 
                 scenario_results.append({
                     'Scenario': scenario_name,
+                    'Description': params['description'],
                     'Projected Wealth': adjusted_wealth,
                     'FIRE Achievement': fire_achievement,
-                    'Savings Rate': params['savings_multiplier'],
-                    'Expected Return': params['return_rate'] * 100
+                    'Monthly Savings Adjustment': f"{(params['savings_multiplier'] - 1) * 100:+.0f}%",
+                    'Expected Return': f"{params['return_rate'] * 100:.1f}%"
                 })
             
             scenario_df = pd.DataFrame(scenario_results)
@@ -931,36 +1028,60 @@ if analyze_button:
             # Scenario comparison chart
             fig_scenarios = go.Figure()
             
+            colors = ['#e74c3c', '#667eea', '#2ecc71']
             for i, scenario in enumerate(scenario_results):
-                color = ['#e74c3c', '#667eea', '#2ecc71'][i]
                 fig_scenarios.add_trace(go.Bar(
                     name=scenario['Scenario'],
-                    x=['Projected Wealth', 'FIRE Achievement'],
+                    x=['Projected Wealth (Million ¥)', 'FIRE Achievement (%)'],
                     y=[scenario['Projected Wealth']/1000000, scenario['FIRE Achievement']],
-                    marker_color=color,
-                    opacity=0.8
+                    marker_color=colors[i],
+                    opacity=0.8,
+                    text=[f"¥{scenario['Projected Wealth']/1000000:.1f}M", f"{scenario['FIRE Achievement']:.1f}%"],
+                    textposition='auto',
                 ))
             
             fig_scenarios.update_layout(
-                title="Scenario Comparison",
+                title="Scenario Impact Comparison",
                 barmode='group',
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
                 font={'color': "white", 'family': "Inter"},
-                height=400
+                height=400,
+                yaxis_title="Value",
+                showlegend=True
             )
+            
+            fig_scenarios.update_xaxes(gridcolor="rgba(255,255,255,0.2)")
+            fig_scenarios.update_yaxes(gridcolor="rgba(255,255,255,0.2)")
             
             st.plotly_chart(fig_scenarios, use_container_width=True)
             
-            # Scenario details table
-            st.dataframe(
-                scenario_df.style.format({
-                    'Projected Wealth': '¥{:,.0f}',
-                    'FIRE Achievement': '{:.1f}%',
-                    'Expected Return': '{:.1f}%'
-                }),
-                use_container_width=True
-            )
+            # Scenario details with actionable insights
+            st.markdown("#### 💰 What Each Scenario Means:")
+            
+            for scenario in scenario_results:
+                color = {'Conservative': '#e74c3c', 'Current Plan': '#667eea', 'Aggressive': '#2ecc71'}[scenario['Scenario']]
+                
+                st.markdown(f"""
+                <div style="background: linear-gradient(145deg, #34495e, #2c3e50); padding: 1.5rem; margin: 1rem 0; border-radius: 15px; border-left: 4px solid {color};">
+                    <h4 style="color: {color}; margin-bottom: 1rem;">{scenario['Scenario']} Strategy</h4>
+                    <p style="color: #bdc3c7; margin-bottom: 1rem;">{scenario['Description']}</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <span style="color: white; font-weight: bold;">Final Wealth</span><br>
+                            <span style="color: {color}; font-size: 1.2rem;">{format_currency(scenario['Projected Wealth'])}</span>
+                        </div>
+                        <div>
+                            <span style="color: white; font-weight: bold;">FIRE Progress</span><br>
+                            <span style="color: {color}; font-size: 1.2rem;">{scenario['FIRE Achievement']:.1f}%</span>
+                        </div>
+                        <div>
+                            <span style="color: white; font-weight: bold;">Savings Change</span><br>
+                            <span style="color: {color}; font-size: 1.2rem;">{scenario['Monthly Savings Adjustment']}</span>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
         
         with tab4:
             # Enhanced advice with personalized recommendations
@@ -974,24 +1095,37 @@ if analyze_button:
                 advice_items.append({
                     'icon': '💰',
                     'title': 'Increase Savings Rate',
-                    'description': 'Consider increasing monthly savings by 20-30% to improve FIRE readiness',
-                    'priority': 'High'
+                    'description': 'Consider increasing monthly savings by 20-30% to improve FIRE readiness. Even ¥50,000 more per month can significantly accelerate your timeline.',
+                    'priority': 'High',
+                    'action': 'Set up automatic transfers to boost monthly savings'
                 })
             
             if result.get('traditional_retirement_age', 62) > result.get('retirement_age_midpoint', 65):
                 advice_items.append({
                     'icon': '⏰',
                     'title': 'Adjust Timeline',
-                    'description': 'Consider retiring 2-3 years later or increasing investment returns',
-                    'priority': 'Medium'
+                    'description': 'Consider retiring 2-3 years later or increasing investment returns through diversified portfolio growth strategies.',
+                    'priority': 'Medium',
+                    'action': 'Review investment allocation with a financial advisor'
                 })
             
             if fire_pct > 80:
                 advice_items.append({
                     'icon': '🎉',
                     'title': 'Optimize Strategy',
-                    'description': 'You\'re on track! Consider tax optimization and estate planning',
-                    'priority': 'Low'
+                    'description': 'You\'re on track! Consider tax optimization strategies like NISA maximization and estate planning to preserve wealth.',
+                    'priority': 'Low',
+                    'action': 'Focus on tax-efficient investment vehicles'
+                })
+            
+            # Always add general advice
+            if fire_pct >= 50 and fire_pct <= 80:
+                advice_items.append({
+                    'icon': '📈',
+                    'title': 'Fine-tune Your Strategy',
+                    'description': 'You\'re making good progress! Small optimizations to your investment mix could help you reach FIRE 2-3 years earlier.',
+                    'priority': 'Medium',
+                    'action': 'Consider increasing equity allocation for higher growth potential'
                 })
             
             # Display advice cards
@@ -1006,26 +1140,30 @@ if analyze_button:
                     margin: 1rem 0;
                     box-shadow: 0 8px 25px rgba(0,0,0,0.1);
                 ">
-                    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
                         <span style="font-size: 2rem; margin-right: 1rem;">{advice['icon']}</span>
                         <div>
                             <h4 style="color: white; margin: 0; font-family: 'Inter', sans-serif;">{advice['title']}</h4>
                             <span style="color: {priority_color}; font-size: 0.8rem; font-weight: 600;">{advice['priority']} Priority</span>
                         </div>
                     </div>
-                    <p style="color: #bdc3c7; margin: 0; font-family: 'Inter', sans-serif;">{advice['description']}</p>
+                    <p style="color: #bdc3c7; margin-bottom: 1rem; font-family: 'Inter', sans-serif;">{advice['description']}</p>
+                    <div style="background: rgba(255,255,255,0.1); padding: 0.75rem; border-radius: 8px;">
+                        <strong style="color: {priority_color};">💡 Action Step:</strong>
+                        <span style="color: white;"> {advice['action']}</span>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
             
             # Action plan
-            st.markdown("### 🗺️ Next Steps Action Plan")
+            st.markdown("### 🗺️ Your 90-Day Action Plan")
             
             action_steps = [
-                "📊 Review current investment allocation",
-                "💳 Maximize employer 401k matching",
-                "🏠 Consider housing cost optimization",
-                "📈 Explore tax-advantaged accounts",
-                "🎯 Set up automatic savings increases"
+                "📊 Review and optimize current investment allocation for your risk tolerance",
+                "💳 Maximize employer 401k matching and NISA contributions (¥1.2M annually)",
+                "🏠 Evaluate housing costs - consider refinancing or downsizing if beneficial",
+                "📈 Set up automatic savings increases (1% of salary every 6 months)",
+                "🎯 Schedule quarterly reviews to track progress and adjust strategy"
             ]
             
             for i, step in enumerate(action_steps, 1):
@@ -1037,10 +1175,29 @@ if analyze_button:
                     margin: 0.5rem 0;
                     color: white;
                     font-family: 'Inter', sans-serif;
+                    display: flex;
+                    align-items: center;
                 ">
-                    <strong>Step {i}:</strong> {step}
+                    <div style="background: rgba(255,255,255,0.2); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin-right: 1rem; font-weight: bold;">
+                        {i}
+                    </div>
+                    <div>{step}</div>
                 </div>
                 """, unsafe_allow_html=True)
+            
+            # Contact CTA
+            st.markdown("---")
+            st.markdown("""
+            <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 2rem; border-radius: 15px; text-align: center; margin: 2rem 0;">
+                <h3 style="color: white; margin-bottom: 1rem;">🚀 Ready to Accelerate Your Plan?</h3>
+                <p style="color: white; margin-bottom: 1.5rem; opacity: 0.9;">
+                    Connect with a MILIZE financial specialist for personalized guidance tailored to your specific situation.
+                </p>
+                <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px; display: inline-block;">
+                    <span style="color: white; font-weight: bold;">📞 Book a free consultation to optimize your retirement strategy</span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
     
     else:
         st.error("❌ No matching scenario found. Try different parameters!")
@@ -1090,8 +1247,65 @@ else:
             </div>
             """, unsafe_allow_html=True)
     
+    # Enhanced usage instructions
+    st.markdown("---")
+    st.markdown("### 🚀 How to Get Started")
+    
+    instructions = [
+        {"step": "1", "title": "Enter Your Profile", "desc": "Fill in your basic information, income, and savings details in the sidebar", "icon": "👤"},
+        {"step": "2", "title": "Set Your Goals", "desc": "Define your target retirement age and expected living expenses", "icon": "🎯"},
+        {"step": "3", "title": "Get Analysis", "desc": "Click 'Analyze' to receive personalized FIRE and traditional retirement insights", "icon": "🔍"},
+        {"step": "4", "title": "Explore Scenarios", "desc": "Review different strategies and optimize your path to financial independence", "icon": "📊"}
+    ]
+    
+    for i, instruction in enumerate(instructions):
+        if i % 2 == 0:
+            col1, col2 = st.columns([1, 3])
+        else:
+            col2, col1 = st.columns([3, 1])
+        
+        with col1:
+            st.markdown(f"""
+            <div style="
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 1rem auto;
+                font-size: 2rem;
+            ">
+                {instruction['icon']}
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div style="padding: 1rem;">
+                <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="
+                        background: linear-gradient(45deg, #667eea, #764ba2);
+                        color: white;
+                        border-radius: 50%;
+                        width: 30px;
+                        height: 30px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        margin-right: 1rem;
+                    ">{instruction['step']}</span>
+                    <h4 style="color: white; margin: 0; font-family: 'Inter', sans-serif;">{instruction['title']}</h4>
+                </div>
+                <p style="color: #bdc3c7; margin: 0; padding-left: 3rem;">{instruction['desc']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
     # Data insights preview
     if df is not None and len(df) > 0:
+        st.markdown("---")
         st.markdown("### 📈 Live Data Insights")
         
         # Create a sample analysis
@@ -1101,13 +1315,36 @@ else:
             yellow_pct = (df['status_color'] == 'yellow').mean() * 100
             red_pct = (df['status_color'] == 'red').mean() * 100
             
-            col1, col2, col3 = st.columns(3)
+            col1, col2, col3, col4 = st.columns(4)
             with col1:
-                st.metric("🟢 On Track", f"{green_pct:.1f}%", "of scenarios")
+                st.metric("📊 Total Scenarios", f"{total_scenarios:,}", "analyzed profiles")
             with col2:
-                st.metric("🟡 Needs Attention", f"{yellow_pct:.1f}%", "of scenarios") 
+                st.metric("🟢 On Track", f"{green_pct:.1f}%", "of users")
             with col3:
-                st.metric("🔴 Requires Action", f"{red_pct:.1f}%", "of scenarios")
+                st.metric("🟡 Needs Attention", f"{yellow_pct:.1f}%", "require adjustments") 
+            with col4:
+                st.metric("🔴 Requires Action", f"{red_pct:.1f}%", "need major changes")
+        
+        # Success stories section
+        st.markdown("""
+        <div style="background: linear-gradient(145deg, #2c3e50, #34495e); padding: 2rem; border-radius: 15px; margin: 2rem 0;">
+            <h4 style="color: #2ecc71; margin-bottom: 1rem;">✨ Success Insights</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <h5 style="color: white; margin-bottom: 0.5rem;">🔥 FIRE Achievers</h5>
+                    <p style="color: #bdc3c7; font-size: 0.9rem; margin: 0;">
+                        Users who achieve FIRE typically save 30-40% of their income and start investing in their early 30s.
+                    </p>
+                </div>
+                <div>
+                    <h5 style="color: white; margin-bottom: 0.5rem;">⏰ Traditional Success</h5>
+                    <p style="color: #bdc3c7; font-size: 0.9rem; margin: 0;">
+                        Successful traditional retirees consistently save 15-20% and maximize pension contributions.
+                    </p>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
 # Enhanced footer
 st.markdown("---")
@@ -1115,5 +1352,10 @@ st.markdown("""
 <div style="text-align: center; padding: 2rem 0; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 15px; margin-top: 2rem;">
     <h3 style="color: white; margin-bottom: 1rem; font-family: 'Inter', sans-serif;">🚀 PFM Compass</h3>
     <p style="color: white; margin: 0; opacity: 0.9;">Empowering your financial future with AI-driven insights</p>
+    <div style="margin-top: 1rem;">
+        <span style="color: white; font-size: 0.9rem; opacity: 0.8;">
+            Powered by advanced financial modeling • Built for the Japanese market • MILIZE Partnership
+        </span>
+    </div>
 </div>
 """, unsafe_allow_html=True)
