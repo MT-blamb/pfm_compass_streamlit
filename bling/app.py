@@ -757,11 +757,10 @@ if analyze_button:
                     if len(timeline_df) > 0 and 'age' in timeline_df.columns and 'wealth' in timeline_df.columns:
                         # Create subplots for enhanced visualization
                         fig = make_subplots(
-                            rows=2, cols=1,
-                            subplot_titles=('Wealth Growth Timeline', 'Annual Growth Rate'),
+                            rows=1, cols=1,
+                            subplot_titles=('Wealth Growth Timeline'),
                             vertical_spacing=0.14,
-                            specs=[[{"secondary_y": False}],
-                                   [{"secondary_y": False}]]
+                            specs=[[{"secondary_y": False}],]
                         )
                         
                         # Main wealth timeline
@@ -787,42 +786,6 @@ if analyze_button:
                             annotation_text=f"FIRE Goal: {format_currency(result.get('fire_number', 60000000))}",
                             row=1, col=1
                         )
-                        
-                        # Growth rate calculation
-                        if len(timeline_df) > 1:
-                            growth_rates = []
-                            for i in range(1, len(timeline_df)):
-                                years = timeline_df.iloc[i]['age'] - timeline_df.iloc[i-1]['age']
-                                if years > 0:
-                                    rate = ((timeline_df.iloc[i]['wealth'] / timeline_df.iloc[i-1]['wealth']) ** (1/years) - 1) * 100
-                                    growth_rates.append(rate)
-                                else:
-                                    growth_rates.append(0)
-                            
-                            # Add growth rate chart
-                            fig.add_trace(
-                                go.Bar(
-                                    x=timeline_df['age'][1:],
-                                    y=growth_rates,
-                                    name='Annual Growth Rate (%)',
-                                    marker_color='#f39c12',
-                                    opacity=0.7
-                                ),
-                                row=2, col=1
-                            )
-                        
-                        fig.update_layout(
-                            height=700,
-                            showlegend=True,
-                            title_text="Enhanced Wealth Projection Analysis",
-                            title_font_size=20,
-                            paper_bgcolor="rgba(0,0,0,0)",
-                            plot_bgcolor="rgba(0,0,0,0)",
-                            font={'color': "white", 'family': "Inter"}
-                        )
-                        
-                        fig.update_xaxes(title_text="Age", gridcolor="rgba(255,255,255,0.2)")
-                        fig.update_yaxes(title_text="Wealth (¥)", tickformat=',.0f', gridcolor="rgba(255,255,255,0.2)")
                         
                         st.plotly_chart(fig, use_container_width=True)
                     else:
@@ -867,7 +830,7 @@ if analyze_button:
                         paper_bgcolor="rgba(0,0,0,0)",
                         plot_bgcolor="rgba(0,0,0,0)",
                         font={'color': "white"},
-                        height=400
+                        height=800
                     )
                     
                     st.plotly_chart(fig, use_container_width=True)
