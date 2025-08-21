@@ -719,7 +719,7 @@ if analyze_button:
             # Chart explanation for wealth timeline
             st.markdown(create_chart_explanation(
                 "Wealth Growth Over Time",
-                "This chart shows how your savings and investments are projected to grow from now until retirement. The blue line represents your accumulated wealth, while the red dashed line shows your FIRE target (25 times annual expenses). When the blue line crosses the red line, you've achieved financial independence!"
+                "This chart shows how your savings and investments are projected to grow from now until retirement. The blue line represents your accumulated wealth, while the red dashed line shows your FIRE target (25 times annual expenses). If the blue line crosses the red line before traditional retirement is achieved, you've achieved early financial independence!"
             ), unsafe_allow_html=True)
             
             # Enhanced wealth timeline with multiple scenarios
