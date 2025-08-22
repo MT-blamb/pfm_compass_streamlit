@@ -85,4 +85,4 @@ Thumbs.db
 # AWS deployment artifacts
 *.pem
 user-data.sh
-data/*.parquet
+# data/*.parquet
