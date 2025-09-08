@@ -121,11 +121,9 @@ python3 -m pip install --upgrade pip
 python3 -m pip install virtualenv
 ```
 
-**6. プロジェクトのダウンロードとセットアップ**
+**6. プロジェクト環境のセットアップ**
 ```bash
-cd ~/Desktop
-git clone https://github.com/MT-blamb/pfm_compass_streamlit.git
-cd PFM_COMPASS_STREAMLIT
+cd ~/Desktop/PFM_COMPASS_STREAMLIT   # ダウンロードしたリポジトリに移動
 python3 -m venv venv                 # 仮想環境の作成
 source venv/bin/activate             # アクティベート
 ```

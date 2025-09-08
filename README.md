@@ -114,11 +114,9 @@ python3 -m pip install --upgrade pip
 python3 -m pip install virtualenv
 ```
 
-**6. Download and Set Up Project**
+**6. Set Up Project Environment**
 ```bash
-cd ~/Desktop
-git clone https://github.com/MT-blamb/pfm_compass_streamlit.git
-cd PFM_COMPASS_STREAMLIT
+cd ~/Desktop/PFM_COMPASS_STREAMLIT   # Navigate to the downloaded repo
 python3 -m venv venv                 # Create virtual environment
 source venv/bin/activate             # Activate it
 ```
