@@ -1,3 +1,5 @@
+**🌐 Language / 言語:** [English](README.md) | [日本語](README_JP.md)
+
 # PFM Compass - Retirement Planning MVP 🎯
 
 A comprehensive retirement planning tool for the Japanese market, part of PFM's 2025 product roadmap. This MVP provides instant financial planning insights to drive MILIZE partnership revenue through structured guest data and booking conversions.
