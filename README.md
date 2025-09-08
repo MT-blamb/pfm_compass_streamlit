@@ -1,5 +1,3 @@
-**🌐 Language / 言語:** [English](README.md) | [日本語](README_JP.md)
-
 # PFM Compass - Retirement Planning MVP 🎯
 
 A comprehensive retirement planning tool for the Japanese market, part of PFM's 2025 product roadmap. This MVP provides instant financial planning insights to drive MILIZE partnership revenue through structured guest data and booking conversions.
@@ -74,14 +72,7 @@ Before starting, you'll need temporary admin privileges to install required pack
 
 ### **📋 Step-by-Step Installation Order**
 
-**1a. Install Full Xcode (Required for complete development)**
-1. Open the **App Store** application
-2. Search for "Xcode"
-3. Click **Get** or **Install** (this may take 30-60 minutes)
-4. Wait for the download to complete (~5-10 GB)
-
-**1b. Install Command Line Tools**
-After Xcode installs, run:
+**1. Install Xcode Command Line Tools** (Required first)
 ```bash
 xcode-select --install
 ```
@@ -383,6 +374,52 @@ streamlit run app_bilingual.py --server.port 8502
 **AI & Data Science Team** - Core development and delivery  
 **PFM Team** - Integration and user experience  
 **MILIZE Partnership** - Business logic and monetization strategy
+
+---
+
+## 🛑 **How to Stop the Application**
+
+When you're finished using the PFM Compass demo, here's how to properly shut it down:
+
+### **Stopping the Streamlit App**
+1. **Go to your Terminal/Command Prompt** (where you ran the `streamlit run` command)
+2. **Press the following keys:**
+   - **Mac/Linux:** `Ctrl + C`
+   - **Windows:** `Ctrl + C`
+3. **You should see:** `Stopping...` or similar message
+4. **The app will shut down** and return you to the command prompt
+
+### **Deactivating the Virtual Environment** (If you used one)
+After stopping the app, deactivate your Python virtual environment:
+```bash
+deactivate
+```
+
+### **Closing the Browser**
+- Simply close the browser tab with `http://localhost:8501`
+- Or close your entire browser if preferred
+
+### **What This Does:**
+- **Stops the local server** running your app
+- **Frees up system resources** (CPU, memory)
+- **Releases the port** (8501) for other applications
+- **Returns Terminal** to normal command prompt
+
+### **Troubleshooting Stop Issues**
+
+**If `Ctrl + C` doesn't work:**
+- Try pressing it multiple times
+- Or close the Terminal/Command Prompt window entirely
+
+**If port remains busy after stopping:**
+```bash
+# Find and kill the process using port 8501
+lsof -ti:8501 | xargs kill -9
+```
+
+**If you need to restart the app:**
+- Follow the same startup commands from the installation guide
+- Make sure you're in the correct directory and virtual environment
 
 ---
 
