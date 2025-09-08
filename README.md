@@ -54,6 +54,113 @@ A comprehensive retirement planning tool for the Japanese market, part of PFM's 
 
 ### Step 2: Set Up Python Environment
 
+---
+
+## 🍎 **Mac Installation Guide for Non-Technical Users**
+
+**For stakeholders without development environments set up**, follow this complete installation guide:
+
+### **⚠️ Admin Privileges Required**
+Before starting, you'll need temporary admin privileges to install required packages. 
+
+**Request admin access by following this link:**
+[Mac Admin Privileges Request Guide](https://moneytree-app.atlassian.net/wiki/spaces/ITKH/pages/2755887278/Mac+How+to+Request+Admin+Privileges?atlOrigin=eyJpIjoiNWFkZjNlMjQzM2EwNDhmOGJmOWZkMDFjMjAxZjMxMGYiLCJwIjoiY29uZmx1ZW5jZS1jaGF0cy1pbnQifQ)
+
+- Contact IT if you need access to this page
+- The admin privilege gives you a **5-minute window** to install packages
+- You may need to refresh this privilege **multiple times** during installation
+
+### **📋 Step-by-Step Installation Order**
+
+**1. Install Xcode Command Line Tools** (Required first)
+```bash
+xcode-select --install
+```
+- A popup will appear → click **Install**
+- This provides basic compilers and tools required on macOS
+
+**2. Install Homebrew** (Package manager for Mac)
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+- Follow the prompts, enter your Mac password when asked
+- **Important:** At the end, copy and paste the lines it gives you to add to `.zprofile` or `.zshrc`
+- Verify installation:
+```bash
+brew --version
+```
+
+**3. Install Python** (3.9 or 3.10 recommended)
+```bash
+brew install python@3.10
+```
+- Confirm installation:
+```bash
+python3 --version
+```
+
+**4. Install Git** (if not already installed)
+```bash
+brew install git
+```
+- Confirm installation:
+```bash
+git --version
+```
+
+**5. Install Virtual Environment Tool**
+```bash
+python3 -m pip install --upgrade pip
+python3 -m pip install virtualenv
+```
+
+**6. Download and Set Up Project**
+```bash
+cd ~/Desktop
+git clone https://github.com/MT-blamb/pfm_compass_streamlit.git
+cd PFM_COMPASS_STREAMLIT
+python3 -m venv venv                 # Create virtual environment
+source venv/bin/activate             # Activate it
+```
+
+**7. Install Python Dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+**8. Run the Application**
+- Simple bilingual app:
+```bash
+streamlit run app_bilingual.py
+```
+- Advanced version:
+```bash
+cd bling
+streamlit run app.py
+```
+
+### **🛠️ Mac Troubleshooting**
+
+**If `brew` command not found:**
+- Restart Terminal and try again
+
+**If `streamlit` command not found:**
+- Ensure virtual environment is activated: `source venv/bin/activate`
+- Re-run: `pip install -r requirements.txt`
+
+**If port already in use:**
+```bash
+streamlit run app_bilingual.py --server.port 8502
+```
+
+**If you get permission errors:**
+- Request admin privileges again (5-minute window expired)
+- Contact IT for additional support
+
+---
+
+## 💻 **Standard Installation (For Technical Users)**
+
 **Option A: Using pip (Recommended for most users)**
 ```bash
 # Install required packages
