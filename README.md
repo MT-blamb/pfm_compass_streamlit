@@ -74,7 +74,14 @@ Before starting, you'll need temporary admin privileges to install required pack
 
 ### **📋 Step-by-Step Installation Order**
 
-**1. Install Xcode Command Line Tools** (Required first)
+**1a. Install Full Xcode (Required for complete development)**
+1. Open the **App Store** application
+2. Search for "Xcode"
+3. Click **Get** or **Install** (this may take 30-60 minutes)
+4. Wait for the download to complete (~5-10 GB)
+
+**1b. Install Command Line Tools**
+After Xcode installs, run:
 ```bash
 xcode-select --install
 ```
