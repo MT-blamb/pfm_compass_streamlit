@@ -1,5 +1,41 @@
 # PFM Compass - Retirement Planning MVP 🎯
 
+### **⚠️ Admin Privileges Required**
+Before starting, you'll need temporary admin privileges to install required packages. 
+
+**Request admin access by following this link:**
+[Mac Admin Privileges Request Guide](https://moneytree-app.atlassian.net/wiki/spaces/ITKH/pages/2755887278/Mac+How+to+Request+Admin+Privileges?atlOrigin=eyJpIjoiNWFkZjNlMjQzM2EwNDhmOGJmOWZkMDFjMjAxZjMxMGYiLCJwIjoiY29uZmx1ZW5jZS1jaGF0cy1pbnQifQ)
+
+- Contact IT if you need access to this page
+- The admin privilege gives you a **5-minute window** to install packages
+- You may need to refresh this privilege **multiple times** during installation
+
+> ## 🚀 PFM Compass One-Click Installer
+> 
+> ### For Non-Technical Users
+> This installer automatically sets up the entire PFM Compass application with a single command. **No technical knowledge required!**
+> 
+> #### Quick Start
+> 
+> **🍎 Mac/Linux Users:**
+> ```bash
+> # Download and run the installer
+> curl -o install_pfm.sh https://raw.githubusercontent.com/MT-blamb/pfm_compass_streamlit/master/install_pfm.sh
+> chmod +x install_pfm.sh
+> ./install_pfm.sh
+> ```
+> 
+> **🎮 Launch the application:**
+> ```bash
+> cd [installation-directory]/pfm_compass_streamlit
+> ./launch_simple.sh      # For demos
+> ./launch_advanced.sh    # For full features
+> ```
+> 
+> *Choose your installation directory during setup - Desktop, current folder, or custom location!*
+
+---
+
 A comprehensive retirement planning tool for the Japanese market, part of PFM's 2025 product roadmap. This MVP provides instant financial planning insights to drive MILIZE partnership revenue through structured guest data and booking conversions.
 
 ## 📋 Overview
