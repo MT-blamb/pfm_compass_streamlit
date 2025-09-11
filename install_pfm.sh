@@ -336,6 +336,7 @@ main() {
     install_package_manager
     install_python
     install_git
+    get_installation_directory
     clone_repository
     setup_virtual_environment
     install_dependencies
