@@ -1,3 +1,5 @@
+**🌐 Language / 言語:** [English](README.md) | [日本語](README_JP.md)
+
 # PFM Compass - Retirement Planning MVP 🎯
 
 ### **⚠️ Admin Privileges Required**
